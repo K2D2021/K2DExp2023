@@ -35,11 +35,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
-
                     var sliderPosition by remember {
                         mutableStateOf(30f)
                     }
+
                     var sliderPosition2 by remember {
                         mutableStateOf(30f)
                     }
@@ -65,6 +64,7 @@ class MainActivity : ComponentActivity() {
                             style = MaterialTheme.typography.headlineLarge,
                             text = sliderPosition.toInt().toString() + "sp"
                         )
+
                         Spacer(modifier = Modifier.height(100.dp))
 
                         ResizeableText("It is true!", sliderPosition2)
@@ -75,6 +75,7 @@ class MainActivity : ComponentActivity() {
                             sliderPosition = sliderPosition2,
                             onPositionChange = handlePositionChange2
                         )
+
                         Text(
                             style = MaterialTheme.typography.headlineMedium,
                             text = sliderPosition2.toInt().toString() + "sp"
@@ -104,5 +105,4 @@ fun SliderForTextSize(sliderPosition: Float, onPositionChange: (Float) -> Unit) 
         valueRange = 30f..38f,
         value = sliderPosition,
         onValueChange = { onPositionChange(it) })
-
 }
