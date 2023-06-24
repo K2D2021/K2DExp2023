@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        ResizeableText("Welcome to Compose", sliderPosition)
+                        ResizeableText("Yor are so cool!", sliderPosition)
 
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
                         )
                         Spacer(modifier = Modifier.height(100.dp))
 
-                        ResizeableText("Second text", sliderPosition2)
+                        ResizeableText("It is true!", sliderPosition2)
 
                         Spacer(modifier = Modifier.height(10.dp))
 
