@@ -4,11 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -105,4 +107,30 @@ fun SliderForTextSize(sliderPosition: Float, onPositionChange: (Float) -> Unit) 
         valueRange = 30f..38f,
         value = sliderPosition,
         onValueChange = { onPositionChange(it) })
+}
+
+@Composable
+fun CounterButton(
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .width(200.dp)
+            .height(200.dp)
+    ) {
+        ButtonContainer(
+            onValueDecreaseClick = { /*TODO*/ },
+            onValueIncreaseClick = { /*TODO*/ },
+            onValueClearClick = { /*TODO*/ },
+            modifier = Modifier
+        )
+
+        DraggableThumbButton(
+            value = value,
+            onClick = { /*TODO*/},
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
 }
