@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var sliderPosition by remember {
+                    /*var sliderPosition by remember {
                         mutableStateOf(30f)
                     }
 
@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
                             text = sliderPosition2.toInt().toString() + "sp"
                         )
 
-                    }
+                    }*/
                 }
             }
         }
