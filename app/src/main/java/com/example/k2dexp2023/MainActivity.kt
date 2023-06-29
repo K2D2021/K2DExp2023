@@ -1,16 +1,21 @@
 package com.example.k2dexp2023
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,22 +25,28 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.k2dexp2023.ui.theme.K2DExp2023Theme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +64,16 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        CounterButton(value = "0")
+
+                        var valueCounter by remember {
+                            mutableStateOf(0)
+                        }
+
+                        CounterButton(value = valueCounter.toString(),
+                            onValueIncreaseClick = { valueCounter += 1 },
+                            onValueDecreaseClick = { valueCounter -= 1 },
+                            onValueClearClick = { valueCounter = 0 }
+                        )
                     }
                     /*var sliderPosition by remember {
                         mutableStateOf(30f)
@@ -109,7 +129,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
-@Composable
+/*@Composable
 fun ResizeableText(displayedText: String = "Default text", textSize: Float = 10F) {
     Text(
         text = displayedText,
@@ -125,29 +145,32 @@ fun SliderForTextSize(sliderPosition: Float, onPositionChange: (Float) -> Unit) 
         valueRange = 30f..38f,
         value = sliderPosition,
         onValueChange = { onPositionChange(it) })
-}
+}*/
 
 @Composable
-fun CounterButton(
+private fun CounterButton(
     value: String,
+    onValueDecreaseClick: () -> Unit,
+    onValueIncreaseClick: () -> Unit,
+    onValueClearClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .width(200.dp)
-            .height(200.dp)
+            .height(80.dp)
     ) {
         ButtonContainer(
-            onValueDecreaseClick = { /*TODO*/ },
-            onValueIncreaseClick = { /*TODO*/ },
-            onValueClearClick = { /*TODO*/ },
+            onValueDecreaseClick = onValueDecreaseClick,
+            onValueIncreaseClick = onValueIncreaseClick,
+            onValueClearClick = onValueClearClick,
             modifier = Modifier
         )
 
         DraggableThumbButton(
             value = value,
-            onClick = { /*TODO*/ },
+            onClick = onValueIncreaseClick,
             modifier = Modifier.align(Alignment.Center)
         )
     }
@@ -219,20 +242,51 @@ private fun IconControlButton(
     }
 }
 
+@SuppressLint("RememberReturnType")
 @Composable
 private fun DraggableThumbButton(
     value: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val thumbOffsetX = remember {
+        Animatable(0f)
+    }
+    val scope = rememberCoroutineScope()
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
+            .offset {
+                IntOffset(
+                    thumbOffsetX.value.toInt(),
+                    0
+                )
+            }
             .shadow(8.dp, shape = CircleShape)
             .size(64.dp)
             .clip(CircleShape)
             .clickable { onClick() }
             .background(Color.Gray)
+            .pointerInput(Unit) {
+                forEachGesture {
+                    awaitPointerEventScope {
+                        awaitFirstDown()
+
+                        do {
+                            val event = awaitPointerEvent()
+                            event.changes.forEach { pointerInputChange ->
+                                scope.launch {
+                                    val targetValue =
+                                        thumbOffsetX.value + pointerInputChange.positionChange().x
+                                    thumbOffsetX.snapTo(targetValue)
+                                }
+                            }
+                        } while (event.changes.any { it.pressed })
+                    }
+                }
+            }
     ) {
         Text(
             text = value,
