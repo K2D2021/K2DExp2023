@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.k2dexp2023.ui.theme.K2DExp2023Theme
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -173,6 +175,8 @@ private fun CounterButton(
         DraggableThumbButton(
             value = value,
             onClick = onValueIncreaseClick,
+            onValueDecreaseClick = onValueDecreaseClick,
+            onValueIncreaseClick = onValueIncreaseClick,
             modifier = Modifier.align(Alignment.Center)
         )
     }
@@ -249,6 +253,8 @@ private fun IconControlButton(
 private fun DraggableThumbButton(
     value: String,
     onClick: () -> Unit,
+    onValueDecreaseClick: () -> Unit,
+    onValueIncreaseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val dragLimitHorizontalPx = 60.dp.dpToPx()
@@ -291,6 +297,14 @@ private fun DraggableThumbButton(
                                 }
                             }
                         } while (event.changes.any { it.pressed })
+
+                        if (thumbOffsetX.value.absoluteValue >= dragLimitHorizontalPx){
+                            if (thumbOffsetX.value.sign > 0) {
+                                onValueIncreaseClick()
+                            } else {
+                                onValueDecreaseClick()
+                            }
+                        }
                     }
                 }
             }
@@ -305,9 +319,8 @@ private fun DraggableThumbButton(
 }
 
 @Composable
-private fun Dp.dpToPx(): Float {
-    return with(LocalDensity.current) { this@dpToPx.toPx() }
-}
+private fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
+
 
 
 
