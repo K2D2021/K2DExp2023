@@ -41,8 +41,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.k2dexp2023.ui.theme.K2DExp2023Theme
@@ -249,6 +251,7 @@ private fun DraggableThumbButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val dragLimitHorizontalPx = 60.dp.dpToPx()
 
     val thumbOffsetX = remember {
         Animatable(0f)
@@ -280,7 +283,11 @@ private fun DraggableThumbButton(
                                 scope.launch {
                                     val targetValue =
                                         thumbOffsetX.value + pointerInputChange.positionChange().x
-                                    thumbOffsetX.snapTo(targetValue)
+                                    val targetValueWithinBounds = targetValue.coerceIn(
+                                        -dragLimitHorizontalPx,
+                                        dragLimitHorizontalPx
+                                    )
+                                    thumbOffsetX.snapTo(targetValueWithinBounds)
                                 }
                             }
                         } while (event.changes.any { it.pressed })
@@ -295,6 +302,11 @@ private fun DraggableThumbButton(
             textAlign = TextAlign.Center
         )
     }
+}
+
+@Composable
+private fun Dp.dpToPx(): Float {
+    return with(LocalDensity.current) { this@dpToPx.toPx() }
 }
 
 
