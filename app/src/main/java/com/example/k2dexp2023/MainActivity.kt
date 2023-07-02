@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -167,7 +168,10 @@ private fun CounterButton(
             .width(200.dp)
             .height(80.dp)
     ) {
+        val thumbOffsetX = remember {Animatable(0f)}
+
         ButtonContainer(
+            thumbOffsetX = thumbOffsetX.value,
             onValueDecreaseClick = onValueDecreaseClick,
             onValueIncreaseClick = onValueIncreaseClick,
             onValueClearClick = onValueClearClick,
@@ -176,6 +180,7 @@ private fun CounterButton(
 
         DraggableThumbButton(
             value = value,
+            thumbOffsetX = thumbOffsetX,
             onClick = onValueIncreaseClick,
             onValueDecreaseClick = onValueDecreaseClick,
             onValueIncreaseClick = onValueIncreaseClick,
@@ -186,9 +191,11 @@ private fun CounterButton(
 
 private const val ICON_BUTTON_ALPHA_INITIAL = 0.3f
 private const val CONTAINER_BACKGROUND_ALPHA_INITIAL = 0.3f
+private const val CONTAINER_OFFSET_FACTOR = 0.1f
 
 @Composable
 fun ButtonContainer(
+    thumbOffsetX: Float,
     onValueDecreaseClick: () -> Unit,
     onValueIncreaseClick: () -> Unit,
     onValueClearClick: () -> Unit,
@@ -199,6 +206,12 @@ fun ButtonContainer(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .offset {
+                IntOffset(
+                    (thumbOffsetX * CONTAINER_OFFSET_FACTOR).toInt(),
+                    0
+                )
+            }
             .fillMaxSize()
             .clip(RoundedCornerShape(64.dp))
             .background(Color.Black.copy(alpha = CONTAINER_BACKGROUND_ALPHA_INITIAL))
@@ -250,20 +263,20 @@ private fun IconControlButton(
     }
 }
 
+private const val DRAG_LIMIT_HORIZONTAL_DP = 72
+
 @SuppressLint("RememberReturnType")
 @Composable
 private fun DraggableThumbButton(
     value: String,
+    thumbOffsetX: Animatable<Float, AnimationVector1D>,
     onClick: () -> Unit,
     onValueDecreaseClick: () -> Unit,
     onValueIncreaseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val dragLimitHorizontalPx = 60.dp.dpToPx()
+    val dragLimitHorizontalPx = DRAG_LIMIT_HORIZONTAL_DP.dp.dpToPx()
 
-    val thumbOffsetX = remember {
-        Animatable(0f)
-    }
     val scope = rememberCoroutineScope()
 
     Box(
@@ -300,7 +313,7 @@ private fun DraggableThumbButton(
                             }
                         } while (event.changes.any { it.pressed })
 
-                        if (thumbOffsetX.value.absoluteValue >= dragLimitHorizontalPx){
+                        if (thumbOffsetX.value.absoluteValue >= dragLimitHorizontalPx) {
                             if (thumbOffsetX.value.sign > 0) {
                                 onValueIncreaseClick()
                             } else {
@@ -309,7 +322,7 @@ private fun DraggableThumbButton(
                         }
 
                         scope.launch {
-                            if (thumbOffsetX.value != 0f){
+                            if (thumbOffsetX.value != 0f) {
                                 thumbOffsetX.animateTo(
                                     targetValue = 0f,
                                     animationSpec = spring(
