@@ -167,7 +167,7 @@ private fun CounterButton(
             .width(200.dp)
             .height(80.dp)
     ) {
-        val thumbOffsetX = remember {Animatable(0f)}
+        val thumbOffsetX = remember { Animatable(0f) }
 
         ButtonContainer(
             thumbOffsetX = thumbOffsetX.value,
@@ -264,6 +264,7 @@ private fun IconControlButton(
 }
 
 private const val DRAG_LIMIT_HORIZONTAL_DP = 72
+private const val DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR = 0.9f
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -302,8 +303,10 @@ private fun DraggableThumbButton(
                             val event = awaitPointerEvent()
                             event.changes.forEach { pointerInputChange ->
                                 scope.launch {
-                                    val targetValue =
-                                        thumbOffsetX.value + pointerInputChange.positionChange().x
+                                    val dragFactor =
+                                        1 - (thumbOffsetX.value / dragLimitHorizontalPx).absoluteValue
+                                    val delta = pointerInputChange.positionChange().x * dragFactor
+                                    val targetValue = thumbOffsetX.value + delta
                                     val targetValueWithinBounds = targetValue.coerceIn(
                                         -dragLimitHorizontalPx,
                                         dragLimitHorizontalPx
@@ -313,7 +316,7 @@ private fun DraggableThumbButton(
                             }
                         } while (event.changes.any { it.pressed })
 
-                        if (thumbOffsetX.value.absoluteValue >= dragLimitHorizontalPx) {
+                        if (thumbOffsetX.value.absoluteValue >= dragLimitHorizontalPx * DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR) {
                             if (thumbOffsetX.value.sign > 0) {
                                 onValueIncreaseClick()
                             } else {
