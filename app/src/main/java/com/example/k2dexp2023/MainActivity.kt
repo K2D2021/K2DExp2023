@@ -192,6 +192,9 @@ private fun CounterButton(
 private const val ICON_BUTTON_ALPHA_INITIAL = 0.3f
 private const val CONTAINER_BACKGROUND_ALPHA_INITIAL = 0.3f
 private const val CONTAINER_OFFSET_FACTOR = 0.1f
+private const val DRAG_LIMIT_HORIZONTAL_DP = 72
+private const val DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR = 0.9f
+private const val DRAG_HORIZONTAL_ICON_HIGHLIGHT_LIMIT_DP = 36
 
 @Composable
 fun ButtonContainer(
@@ -202,6 +205,7 @@ fun ButtonContainer(
     modifier: Modifier = Modifier,
     clearButtonVisible: Boolean = false
 ) {
+    val horizontalHighlightLimitPx = DRAG_HORIZONTAL_ICON_HIGHLIGHT_LIMIT_DP.dp.dpToPx()
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -221,7 +225,16 @@ fun ButtonContainer(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_more_24),
             contentDescription = "Decrease count",
             onClick = onValueDecreaseClick,
-            tintColor = Color.White.copy(alpha = ICON_BUTTON_ALPHA_INITIAL)
+            tintColor = Color.White.copy(
+                alpha = if (thumbOffsetX < 0) {
+                    (thumbOffsetX.absoluteValue / horizontalHighlightLimitPx).coerceIn(
+                        ICON_BUTTON_ALPHA_INITIAL,
+                        1f
+                    )
+                } else {
+                    ICON_BUTTON_ALPHA_INITIAL
+                }
+            )
         )
 
         if (clearButtonVisible) {
@@ -236,7 +249,16 @@ fun ButtonContainer(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_less_24),
             contentDescription = "Increase count",
             onClick = onValueIncreaseClick,
-            tintColor = Color.White.copy(alpha = ICON_BUTTON_ALPHA_INITIAL)
+            tintColor = Color.White.copy(
+                alpha = if (thumbOffsetX > 0) {
+                    (thumbOffsetX.absoluteValue / horizontalHighlightLimitPx).coerceIn(
+                        ICON_BUTTON_ALPHA_INITIAL,
+                        1f
+                    )
+                } else {
+                    ICON_BUTTON_ALPHA_INITIAL
+                }
+            )
         )
     }
 }
@@ -262,9 +284,6 @@ private fun IconControlButton(
         )
     }
 }
-
-private const val DRAG_LIMIT_HORIZONTAL_DP = 72
-private const val DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR = 0.9f
 
 @SuppressLint("RememberReturnType")
 @Composable
