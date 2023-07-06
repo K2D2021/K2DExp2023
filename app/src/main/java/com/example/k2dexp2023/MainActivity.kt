@@ -180,8 +180,6 @@ private fun CounterButton(
         DraggableThumbButton(
             value = value,
             thumbOffsetX = thumbOffsetX,
-//            onClick = onValueIncreaseClick,
-//            onClick = null,
             onValueDecreaseClick = onValueDecreaseClick,
             onValueIncreaseClick = onValueIncreaseClick,
             modifier = Modifier.align(Alignment.Center)
@@ -290,7 +288,6 @@ private fun IconControlButton(
 private fun DraggableThumbButton(
     value: String,
     thumbOffsetX: Animatable<Float, AnimationVector1D>,
-//    onClick: () -> Unit,
     onValueDecreaseClick: () -> Unit,
     onValueIncreaseClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -311,7 +308,6 @@ private fun DraggableThumbButton(
             .shadow(8.dp, shape = CircleShape)
             .size(64.dp)
             .clip(CircleShape)
-//            .clickable { onClick() }
             .background(Color.Gray)
             .pointerInput(Unit) {
                 forEachGesture {
