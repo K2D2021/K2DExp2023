@@ -216,14 +216,24 @@ fun ButtonContainer(
             }
             .fillMaxSize()
             .clip(RoundedCornerShape(64.dp))
-            .background(Color.Black.copy(alpha = CONTAINER_BACKGROUND_ALPHA_INITIAL))
+            .background(
+                Color.Red.copy(
+                    alpha = if (thumbOffsetX > 0) {
+                        CONTAINER_BACKGROUND_ALPHA_INITIAL +
+                                ((thumbOffsetX.absoluteValue / horizontalHighlightLimitPx) / 5f)
+                    } else {
+                        CONTAINER_BACKGROUND_ALPHA_INITIAL -
+                                ((thumbOffsetX.absoluteValue / horizontalHighlightLimitPx) / 10f)
+                    }
+                )
+            )
             .padding(horizontal = 8.dp)
     ) {
         IconControlButton(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_more_24),
             contentDescription = "Decrease count",
             onClick = onValueDecreaseClick,
-            tintColor = Color.White.copy(
+            tintColor = Color.Black.copy(
                 alpha = if (thumbOffsetX < 0) {
                     (thumbOffsetX.absoluteValue / horizontalHighlightLimitPx).coerceIn(
                         ICON_BUTTON_ALPHA_INITIAL,
@@ -240,14 +250,14 @@ fun ButtonContainer(
                 icon = ImageVector.vectorResource(id = R.drawable.baseline_clear_24),
                 contentDescription = "Clear count",
                 onClick = onValueClearClick,
-                tintColor = Color.White.copy(alpha = ICON_BUTTON_ALPHA_INITIAL)
+                tintColor = Color.Black.copy(alpha = ICON_BUTTON_ALPHA_INITIAL)
             )
         }
         IconControlButton(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_less_24),
             contentDescription = "Increase count",
             onClick = onValueIncreaseClick,
-            tintColor = Color.White.copy(
+            tintColor = Color.Black.copy(
                 alpha = if (thumbOffsetX > 0) {
                     (thumbOffsetX.absoluteValue / horizontalHighlightLimitPx).coerceIn(
                         ICON_BUTTON_ALPHA_INITIAL,
@@ -308,7 +318,7 @@ private fun DraggableThumbButton(
             .shadow(8.dp, shape = CircleShape)
             .size(64.dp)
             .clip(CircleShape)
-            .background(Color.Gray)
+            .background(Color.Red)
             .pointerInput(Unit) {
                 forEachGesture {
                     awaitPointerEventScope {
