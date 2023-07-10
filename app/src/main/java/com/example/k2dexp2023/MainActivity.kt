@@ -197,6 +197,7 @@ private const val DRAG_LIMIT_VERTICAL_DP = 64
 private const val DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR = 0.9f
 private const val DRAG_HORIZONTAL_ICON_HIGHLIGHT_LIMIT_DP = 36
 private const val START_DRAG_THRESHOLD_DP = 2
+private const val DRAG_LIMIT_VERTICAL_THRESHOLD_FACTOR = 0.9f
 
 @Composable
 fun ButtonContainer(
@@ -342,17 +343,35 @@ private fun DraggableThumbButton(
                                     if (dragDirection.value == DragDirection.NONE &&
                                         pointerInputChange.positionChange().x.absoluteValue >= startDragThreshold ||
                                         dragDirection.value == DragDirection.HORIZONTAL
-                                    ){
-                                    dragDirection.value = DragDirection.HORIZONTAL
-                                    val dragFactor =
-                                        1 - (thumbOffsetX.value / dragLimitHorizontalPx).absoluteValue
-                                    val delta = pointerInputChange.positionChange().x * dragFactor
-                                    val targetValue = thumbOffsetX.value + delta
-                                    val targetValueWithinBounds = targetValue.coerceIn(
-                                        -dragLimitHorizontalPx,
-                                        dragLimitHorizontalPx
-                                    )
-                                    thumbOffsetX.snapTo(targetValueWithinBounds)
+                                    ) {
+                                        dragDirection.value = DragDirection.HORIZONTAL
+                                        val dragFactor =
+                                            1 - (thumbOffsetX.value / dragLimitHorizontalPx).absoluteValue
+                                        val delta =
+                                            pointerInputChange.positionChange().x * dragFactor
+                                        val targetValue = thumbOffsetX.value + delta
+                                        val targetValueWithinBounds = targetValue.coerceIn(
+                                            -dragLimitHorizontalPx,
+                                            dragLimitHorizontalPx
+                                        )
+                                        thumbOffsetX.snapTo(targetValueWithinBounds)
+                                    } else if (
+                                        (dragDirection.value != DragDirection.HORIZONTAL && pointerInputChange.positionChange().y >= startDragThreshold)
+                                    ) {
+                                        dragDirection.value = DragDirection.VERTICAL
+                                        val dragFactor =
+                                            1 - (thumbOffsetY.value / dragLimitVerticalPx).absoluteValue
+                                        val delta =
+                                            pointerInputChange.positionChange().y * dragFactor
+
+                                        val targetValue = thumbOffsetY.value + delta
+                                        val targetValueWithinBounds =
+                                            targetValue.coerceIn(
+                                                -dragLimitVerticalPx,
+                                                dragLimitVerticalPx
+                                            )
+
+                                        thumbOffsetY.snapTo(targetValueWithinBounds)
                                     }
                                 }
                             }
