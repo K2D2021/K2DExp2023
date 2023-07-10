@@ -168,6 +168,7 @@ private fun CounterButton(
             .height(80.dp)
     ) {
         val thumbOffsetX = remember { Animatable(0f) }
+        val thumbOffsetY = remember { Animatable(0f) }
 
         ButtonContainer(
             thumbOffsetX = thumbOffsetX.value,
@@ -180,6 +181,7 @@ private fun CounterButton(
         DraggableThumbButton(
             value = value,
             thumbOffsetX = thumbOffsetX,
+            thumbOffsetY = thumbOffsetY,
             onValueDecreaseClick = onValueDecreaseClick,
             onValueIncreaseClick = onValueIncreaseClick,
             modifier = Modifier.align(Alignment.Center)
@@ -191,8 +193,10 @@ private const val ICON_BUTTON_ALPHA_INITIAL = 0.3f
 private const val CONTAINER_BACKGROUND_ALPHA_INITIAL = 0.3f
 private const val CONTAINER_OFFSET_FACTOR = 0.1f
 private const val DRAG_LIMIT_HORIZONTAL_DP = 72
+private const val DRAG_LIMIT_VERTICAL_DP = 64
 private const val DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR = 0.9f
 private const val DRAG_HORIZONTAL_ICON_HIGHLIGHT_LIMIT_DP = 36
+private const val START_DRAG_THRESHOLD_DP = 2
 
 @Composable
 fun ButtonContainer(
@@ -298,12 +302,17 @@ private fun IconControlButton(
 private fun DraggableThumbButton(
     value: String,
     thumbOffsetX: Animatable<Float, AnimationVector1D>,
+    thumbOffsetY: Animatable<Float, AnimationVector1D>,
     onValueDecreaseClick: () -> Unit,
     onValueIncreaseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val dragLimitHorizontalPx = DRAG_LIMIT_HORIZONTAL_DP.dp.dpToPx()
-
+    val dragLimitVerticalPx = DRAG_LIMIT_VERTICAL_DP.dp.dpToPx()
+    val startDragThreshold = START_DRAG_THRESHOLD_DP.dp.dpToPx()
+    val dragDirection = remember {
+        mutableStateOf(DragDirection.NONE)
+    }
     val scope = rememberCoroutineScope()
 
     Box(
@@ -312,7 +321,7 @@ private fun DraggableThumbButton(
             .offset {
                 IntOffset(
                     thumbOffsetX.value.toInt(),
-                    0
+                    thumbOffsetY.value.toInt()
                 )
             }
             .shadow(8.dp, shape = CircleShape)
@@ -324,10 +333,17 @@ private fun DraggableThumbButton(
                     awaitPointerEventScope {
                         awaitFirstDown()
 
+                        dragDirection.value = DragDirection.NONE
+
                         do {
                             val event = awaitPointerEvent()
                             event.changes.forEach { pointerInputChange ->
                                 scope.launch {
+                                    if (dragDirection.value == DragDirection.NONE &&
+                                        pointerInputChange.positionChange().x.absoluteValue >= startDragThreshold ||
+                                        dragDirection.value == DragDirection.HORIZONTAL
+                                    ){
+                                    dragDirection.value = DragDirection.HORIZONTAL
                                     val dragFactor =
                                         1 - (thumbOffsetX.value / dragLimitHorizontalPx).absoluteValue
                                     val delta = pointerInputChange.positionChange().x * dragFactor
@@ -337,6 +353,7 @@ private fun DraggableThumbButton(
                                         dragLimitHorizontalPx
                                     )
                                     thumbOffsetX.snapTo(targetValueWithinBounds)
+                                    }
                                 }
                             }
                         } while (event.changes.any { it.pressed })
@@ -375,6 +392,10 @@ private fun DraggableThumbButton(
 
 @Composable
 private fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
+
+private enum class DragDirection {
+    NONE, HORIZONTAL, VERTICAL
+}
 
 
 
