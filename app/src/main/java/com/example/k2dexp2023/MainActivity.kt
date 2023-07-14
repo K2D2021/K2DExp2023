@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.Spring.StiffnessLow
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -153,6 +154,21 @@ fun SliderForTextSize(sliderPosition: Float, onPositionChange: (Float) -> Unit) 
         onValueChange = { onPositionChange(it) })
 }*/
 
+private const val ICON_BUTTON_ALPHA_INITIAL = 0.3f
+private const val CONTAINER_BACKGROUND_ALPHA_INITIAL = 0.3f
+//private const val CONTAINER_BACKGROUND_ALPHA_MAX = 0.7f
+private const val CONTAINER_OFFSET_FACTOR = 0.1f
+private const val DRAG_LIMIT_HORIZONTAL_DP = 72
+private const val DRAG_LIMIT_VERTICAL_DP = 64
+private const val START_DRAG_THRESHOLD_DP = 2
+private const val DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR = 0.9f
+private const val DRAG_LIMIT_VERTICAL_THRESHOLD_FACTOR = 0.9f
+private const val DRAG_HORIZONTAL_ICON_HIGHLIGHT_LIMIT_DP = 36
+private const val DRAG_VERTICAL_ICON_HIGHLIGHT_LIMIT_DP = 60
+private const val DRAG_CLEAR_ICON_REVEAL_DP = 2
+private const val COUNTER_DELAY_INITIAL_MS = 500L
+private const val COUNTER_DELAY_FAST_MS = 100L
+
 @Composable
 private fun CounterButton(
     value: String,
@@ -169,12 +185,15 @@ private fun CounterButton(
     ) {
         val thumbOffsetX = remember { Animatable(0f) }
         val thumbOffsetY = remember { Animatable(0f) }
+//        val verticalDragButtonRevealPx = DRAG_CLEAR_ICON_REVEAL_DP.dp.dpToPx()
 
         ButtonContainer(
             thumbOffsetX = thumbOffsetX.value,
+//            thumbOffsetY = thumbOffsetY.value,
             onValueDecreaseClick = onValueDecreaseClick,
             onValueIncreaseClick = onValueIncreaseClick,
             onValueClearClick = onValueClearClick,
+//            clearButtonVisible = thumbOffsetY.value >= verticalDragButtonRevealPx,
             modifier = Modifier
         )
 
@@ -182,33 +201,29 @@ private fun CounterButton(
             value = value,
             thumbOffsetX = thumbOffsetX,
             thumbOffsetY = thumbOffsetY,
+//            onClick = onValueIncreaseClick,
             onValueDecreaseClick = onValueDecreaseClick,
             onValueIncreaseClick = onValueIncreaseClick,
+//            onValueReset = onValueClearClick,
             modifier = Modifier.align(Alignment.Center)
         )
     }
 }
 
-private const val ICON_BUTTON_ALPHA_INITIAL = 0.3f
-private const val CONTAINER_BACKGROUND_ALPHA_INITIAL = 0.3f
-private const val CONTAINER_OFFSET_FACTOR = 0.1f
-private const val DRAG_LIMIT_HORIZONTAL_DP = 72
-private const val DRAG_LIMIT_VERTICAL_DP = 64
-private const val DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR = 0.9f
-private const val DRAG_HORIZONTAL_ICON_HIGHLIGHT_LIMIT_DP = 36
-private const val START_DRAG_THRESHOLD_DP = 2
-private const val DRAG_LIMIT_VERTICAL_THRESHOLD_FACTOR = 0.9f
-
 @Composable
-fun ButtonContainer(
+private fun ButtonContainer(
     thumbOffsetX: Float,
+//    thumbOffsetY: Float,
     onValueDecreaseClick: () -> Unit,
     onValueIncreaseClick: () -> Unit,
     onValueClearClick: () -> Unit,
     modifier: Modifier = Modifier,
     clearButtonVisible: Boolean = false
 ) {
+
     val horizontalHighlightLimitPx = DRAG_HORIZONTAL_ICON_HIGHLIGHT_LIMIT_DP.dp.dpToPx()
+//    val verticalHighlightLimitPx = DRAG_VERTICAL_ICON_HIGHLIGHT_LIMIT_DP.dp.dpToPx()
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -216,7 +231,7 @@ fun ButtonContainer(
             .offset {
                 IntOffset(
                     (thumbOffsetX * CONTAINER_OFFSET_FACTOR).toInt(),
-                    0
+                    0 //(thumbOffsetY * CONTAINER_OFFSET_FACTOR).toInt(),
                 )
             }
             .fillMaxSize()
@@ -238,6 +253,7 @@ fun ButtonContainer(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_more_24),
             contentDescription = "Decrease count",
             onClick = onValueDecreaseClick,
+//            enabled = !clearButtonVisible,
             tintColor = Color.Black.copy(
                 alpha = if (thumbOffsetX < 0) {
                     (thumbOffsetX.absoluteValue / horizontalHighlightLimitPx).coerceIn(
@@ -255,6 +271,7 @@ fun ButtonContainer(
                 icon = ImageVector.vectorResource(id = R.drawable.baseline_clear_24),
                 contentDescription = "Clear count",
                 onClick = onValueClearClick,
+//                enabled = false,
                 tintColor = Color.Black.copy(alpha = ICON_BUTTON_ALPHA_INITIAL)
             )
         }
@@ -262,6 +279,7 @@ fun ButtonContainer(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_less_24),
             contentDescription = "Increase count",
             onClick = onValueIncreaseClick,
+//            enabled = !clearButtonVisible,
             tintColor = Color.Black.copy(
                 alpha = if (thumbOffsetX > 0) {
                     (thumbOffsetX.absoluteValue / horizontalHighlightLimitPx).coerceIn(
@@ -283,9 +301,16 @@ private fun IconControlButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     tintColor: Color = Color.White,
+//    clickTintColor: Color = Color.White,
+//    enabled: Boolean = true
 ) {
+//    val interactionSource = remember { MutableInteractionSource() }
+//    val isPressed by interactionSource.collectIsPressedAsState()
+
     IconButton(
         onClick = onClick,
+//        interactionSource = interactionSource,
+//        enabled = enabled,
         modifier = modifier
             .size(48.dp)
     ) {
@@ -304,21 +329,25 @@ private fun DraggableThumbButton(
     value: String,
     thumbOffsetX: Animatable<Float, AnimationVector1D>,
     thumbOffsetY: Animatable<Float, AnimationVector1D>,
+//    onClick: () -> Unit,
     onValueDecreaseClick: () -> Unit,
     onValueIncreaseClick: () -> Unit,
+//    onValueReset: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val dragLimitHorizontalPx = DRAG_LIMIT_HORIZONTAL_DP.dp.dpToPx()
     val dragLimitVerticalPx = DRAG_LIMIT_VERTICAL_DP.dp.dpToPx()
     val startDragThreshold = START_DRAG_THRESHOLD_DP.dp.dpToPx()
+    val scope = rememberCoroutineScope()
+
     val dragDirection = remember {
         mutableStateOf(DragDirection.NONE)
     }
-    val scope = rememberCoroutineScope()
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
+
             .offset {
                 IntOffset(
                     thumbOffsetX.value.toInt(),
@@ -328,37 +357,59 @@ private fun DraggableThumbButton(
             .shadow(8.dp, shape = CircleShape)
             .size(64.dp)
             .clip(CircleShape)
+            /*.clickable {
+                // only allow clicks while not dragging
+                if (thumbOffsetX.value.absoluteValue <= startDragThreshold &&
+                    thumbOffsetY.value.absoluteValue <= startDragThreshold
+                ) {
+                    onClick()
+                }
+            }*/
             .background(Color.Red)
             .pointerInput(Unit) {
                 forEachGesture {
                     awaitPointerEventScope {
                         awaitFirstDown()
 
+
                         dragDirection.value = DragDirection.NONE
+
+//                        var counterJob: Job? = null
 
                         do {
                             val event = awaitPointerEvent()
                             event.changes.forEach { pointerInputChange ->
+
                                 scope.launch {
                                     if (dragDirection.value == DragDirection.NONE &&
                                         pointerInputChange.positionChange().x.absoluteValue >= startDragThreshold ||
                                         dragDirection.value == DragDirection.HORIZONTAL
                                     ) {
+
                                         dragDirection.value = DragDirection.HORIZONTAL
+
+
+
                                         val dragFactor =
                                             1 - (thumbOffsetX.value / dragLimitHorizontalPx).absoluteValue
                                         val delta =
                                             pointerInputChange.positionChange().x * dragFactor
+
                                         val targetValue = thumbOffsetX.value + delta
-                                        val targetValueWithinBounds = targetValue.coerceIn(
+                                        val targetValueWithinBounds =
+                                            targetValue.coerceIn(
                                             -dragLimitHorizontalPx,
                                             dragLimitHorizontalPx
                                         )
+
                                         thumbOffsetX.snapTo(targetValueWithinBounds)
                                     } else if (
-                                        (dragDirection.value != DragDirection.HORIZONTAL && pointerInputChange.positionChange().y >= startDragThreshold)
+                                        (dragDirection.value != DragDirection.HORIZONTAL &&
+                                                pointerInputChange.positionChange().y >= startDragThreshold)
                                     ) {
+
                                         dragDirection.value = DragDirection.VERTICAL
+
                                         val dragFactor =
                                             1 - (thumbOffsetY.value / dragLimitVerticalPx).absoluteValue
                                         val delta =
@@ -377,6 +428,7 @@ private fun DraggableThumbButton(
                             }
                         } while (event.changes.any { it.pressed })
 
+
                         if (thumbOffsetX.value.absoluteValue >= dragLimitHorizontalPx * DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR) {
                             if (thumbOffsetX.value.sign > 0) {
                                 onValueIncreaseClick()
@@ -386,12 +438,20 @@ private fun DraggableThumbButton(
                         }
 
                         scope.launch {
-                            if (thumbOffsetX.value != 0f) {
+                            if (dragDirection.value == DragDirection.HORIZONTAL && thumbOffsetX.value != 0f) {
                                 thumbOffsetX.animateTo(
                                     targetValue = 0f,
                                     animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioHighBouncy,
-                                        stiffness = Spring.StiffnessMedium
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = StiffnessLow
+                                    )
+                                )
+                            } else if (dragDirection.value == DragDirection.VERTICAL && thumbOffsetY.value != 0f) {
+                                thumbOffsetY.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = StiffnessLow
                                     )
                                 )
                             }
