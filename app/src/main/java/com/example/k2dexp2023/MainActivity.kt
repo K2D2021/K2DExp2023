@@ -186,7 +186,7 @@ private fun CounterButton(
     ) {
         val thumbOffsetX = remember { Animatable(0f) }
         val thumbOffsetY = remember { Animatable(0f) }
-//        val verticalDragButtonRevealPx = DRAG_CLEAR_ICON_REVEAL_DP.dp.dpToPx()
+        val verticalDragButtonRevealPx = DRAG_CLEAR_ICON_REVEAL_DP.dp.dpToPx()
 
         ButtonContainer(
             thumbOffsetX = thumbOffsetX.value,
@@ -194,7 +194,7 @@ private fun CounterButton(
             onValueDecreaseClick = onValueDecreaseClick,
             onValueIncreaseClick = onValueIncreaseClick,
             onValueClearClick = onValueClearClick,
-//            clearButtonVisible = thumbOffsetY.value >= verticalDragButtonRevealPx,
+            clearButtonVisible = thumbOffsetY.value >= verticalDragButtonRevealPx,
             modifier = Modifier
         )
 
