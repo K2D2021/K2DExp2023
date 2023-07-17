@@ -157,7 +157,7 @@ fun SliderForTextSize(sliderPosition: Float, onPositionChange: (Float) -> Unit) 
 
 private const val ICON_BUTTON_ALPHA_INITIAL = 0.3f
 private const val CONTAINER_BACKGROUND_ALPHA_INITIAL = 0.3f
-//private const val CONTAINER_BACKGROUND_ALPHA_MAX = 0.7f
+private const val CONTAINER_BACKGROUND_ALPHA_MAX = 0.7f
 private const val CONTAINER_OFFSET_FACTOR = 0.1f
 private const val DRAG_LIMIT_HORIZONTAL_DP = 72
 private const val DRAG_LIMIT_VERTICAL_DP = 64
@@ -232,19 +232,23 @@ private fun ButtonContainer(
             .offset {
                 IntOffset(
                     (thumbOffsetX * CONTAINER_OFFSET_FACTOR).toInt(),
-                    0 //(thumbOffsetY * CONTAINER_OFFSET_FACTOR).toInt(),
+                    (thumbOffsetY * CONTAINER_OFFSET_FACTOR).toInt()
                 )
             }
             .fillMaxSize()
             .clip(RoundedCornerShape(64.dp))
             .background(
                 Color.Red.copy(
-                    alpha = if (thumbOffsetX > 0) {
-                        CONTAINER_BACKGROUND_ALPHA_INITIAL +
-                                ((thumbOffsetX.absoluteValue / horizontalHighlightLimitPx) / 5f)
+                    alpha = if (thumbOffsetX.absoluteValue > 0.0f) {
+                        (CONTAINER_BACKGROUND_ALPHA_INITIAL +
+                                ((thumbOffsetX.absoluteValue / horizontalHighlightLimitPx) / 5f)).coerceAtMost(
+                            CONTAINER_BACKGROUND_ALPHA_MAX)
+                    } else if (thumbOffsetY.absoluteValue > 0.0f) {
+                        (CONTAINER_BACKGROUND_ALPHA_INITIAL +
+                                ((thumbOffsetY.absoluteValue / verticalHighlightLimitPx) / 15f)).coerceAtMost(
+                            CONTAINER_BACKGROUND_ALPHA_MAX)
                     } else {
-                        CONTAINER_BACKGROUND_ALPHA_INITIAL -
-                                ((thumbOffsetX.absoluteValue / horizontalHighlightLimitPx) / 10f)
+                        CONTAINER_BACKGROUND_ALPHA_INITIAL
                     }
                 )
             )
