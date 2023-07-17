@@ -260,7 +260,7 @@ private fun ButtonContainer(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_more_24),
             contentDescription = "Decrease count",
             onClick = onValueDecreaseClick,
-//            enabled = !clearButtonVisible,
+            enabled = !clearButtonVisible,
             tintColor = Color.Black.copy(
                 alpha = if (clearButtonVisible) {
                     0.0f
@@ -280,7 +280,7 @@ private fun ButtonContainer(
                 icon = ImageVector.vectorResource(id = R.drawable.baseline_clear_24),
                 contentDescription = "Clear count",
                 onClick = onValueClearClick,
-//                enabled = false,
+                enabled = false,
                 tintColor = Color.Black.copy(
                     alpha = (thumbOffsetY.absoluteValue / verticalHighlightLimitPx).coerceIn(
                         ICON_BUTTON_ALPHA_INITIAL,
@@ -293,7 +293,7 @@ private fun ButtonContainer(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_less_24),
             contentDescription = "Increase count",
             onClick = onValueIncreaseClick,
-//            enabled = !clearButtonVisible,
+            enabled = !clearButtonVisible,
             tintColor = Color.Black.copy(
                 alpha = if (clearButtonVisible) {
                     0.0f
@@ -318,7 +318,7 @@ private fun IconControlButton(
     modifier: Modifier = Modifier,
     tintColor: Color = Color.White,
 //    clickTintColor: Color = Color.White,
-//    enabled: Boolean = true
+    enabled: Boolean = true
 ) {
 //    val interactionSource = remember { MutableInteractionSource() }
 //    val isPressed by interactionSource.collectIsPressedAsState()
@@ -326,7 +326,7 @@ private fun IconControlButton(
     IconButton(
         onClick = onClick,
 //        interactionSource = interactionSource,
-//        enabled = enabled,
+        enabled = enabled,
         modifier = modifier
             .size(48.dp)
     ) {
