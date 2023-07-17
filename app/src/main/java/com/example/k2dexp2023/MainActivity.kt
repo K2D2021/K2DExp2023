@@ -242,11 +242,13 @@ private fun ButtonContainer(
                     alpha = if (thumbOffsetX.absoluteValue > 0.0f) {
                         (CONTAINER_BACKGROUND_ALPHA_INITIAL +
                                 ((thumbOffsetX.absoluteValue / horizontalHighlightLimitPx) / 5f)).coerceAtMost(
-                            CONTAINER_BACKGROUND_ALPHA_MAX)
+                            CONTAINER_BACKGROUND_ALPHA_MAX
+                        )
                     } else if (thumbOffsetY.absoluteValue > 0.0f) {
                         (CONTAINER_BACKGROUND_ALPHA_INITIAL +
                                 ((thumbOffsetY.absoluteValue / verticalHighlightLimitPx) / 15f)).coerceAtMost(
-                            CONTAINER_BACKGROUND_ALPHA_MAX)
+                            CONTAINER_BACKGROUND_ALPHA_MAX
+                        )
                     } else {
                         CONTAINER_BACKGROUND_ALPHA_INITIAL
                     }
@@ -260,7 +262,9 @@ private fun ButtonContainer(
             onClick = onValueDecreaseClick,
 //            enabled = !clearButtonVisible,
             tintColor = Color.Black.copy(
-                alpha = if (thumbOffsetX < 0) {
+                alpha = if (clearButtonVisible) {
+                    0.0f
+                } else if (thumbOffsetX < 0) {
                     (thumbOffsetX.absoluteValue / horizontalHighlightLimitPx).coerceIn(
                         ICON_BUTTON_ALPHA_INITIAL,
                         1f
@@ -291,7 +295,9 @@ private fun ButtonContainer(
             onClick = onValueIncreaseClick,
 //            enabled = !clearButtonVisible,
             tintColor = Color.Black.copy(
-                alpha = if (thumbOffsetX > 0) {
+                alpha = if (clearButtonVisible) {
+                    0.0f
+                } else if (thumbOffsetX > 0) {
                     (thumbOffsetX.absoluteValue / horizontalHighlightLimitPx).coerceIn(
                         ICON_BUTTON_ALPHA_INITIAL,
                         1f
@@ -398,7 +404,6 @@ private fun DraggableThumbButton(
                                         dragDirection.value = DragDirection.HORIZONTAL
 
 
-
                                         val dragFactor =
                                             1 - (thumbOffsetX.value / dragLimitHorizontalPx).absoluteValue
                                         val delta =
@@ -407,9 +412,9 @@ private fun DraggableThumbButton(
                                         val targetValue = thumbOffsetX.value + delta
                                         val targetValueWithinBounds =
                                             targetValue.coerceIn(
-                                            -dragLimitHorizontalPx,
-                                            dragLimitHorizontalPx
-                                        )
+                                                -dragLimitHorizontalPx,
+                                                dragLimitHorizontalPx
+                                            )
 
                                         thumbOffsetX.snapTo(targetValueWithinBounds)
                                     } else if (
@@ -444,7 +449,7 @@ private fun DraggableThumbButton(
                             } else {
                                 onValueDecreaseClick()
                             }
-                        } else if (thumbOffsetY.value.absoluteValue >= (dragLimitVerticalPx * DRAG_LIMIT_VERTICAL_THRESHOLD_FACTOR)){
+                        } else if (thumbOffsetY.value.absoluteValue >= (dragLimitVerticalPx * DRAG_LIMIT_VERTICAL_THRESHOLD_FACTOR)) {
                             onValueReset()
                         }
 
