@@ -10,6 +10,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.Spring.StiffnessLow
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.Arrangement
@@ -201,10 +202,10 @@ private fun CounterButton(
             value = value,
             thumbOffsetX = thumbOffsetX,
             thumbOffsetY = thumbOffsetY,
-//            onClick = onValueIncreaseClick,
+            onClick = onValueIncreaseClick,
             onValueDecreaseClick = onValueDecreaseClick,
             onValueIncreaseClick = onValueIncreaseClick,
-//            onValueReset = onValueClearClick,
+            onValueReset = onValueClearClick,
             modifier = Modifier.align(Alignment.Center)
         )
     }
@@ -329,10 +330,10 @@ private fun DraggableThumbButton(
     value: String,
     thumbOffsetX: Animatable<Float, AnimationVector1D>,
     thumbOffsetY: Animatable<Float, AnimationVector1D>,
-//    onClick: () -> Unit,
+    onClick: () -> Unit,
     onValueDecreaseClick: () -> Unit,
     onValueIncreaseClick: () -> Unit,
-//    onValueReset: () -> Unit,
+    onValueReset: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val dragLimitHorizontalPx = DRAG_LIMIT_HORIZONTAL_DP.dp.dpToPx()
@@ -357,14 +358,13 @@ private fun DraggableThumbButton(
             .shadow(8.dp, shape = CircleShape)
             .size(64.dp)
             .clip(CircleShape)
-            /*.clickable {
-                // only allow clicks while not dragging
+            .clickable {
                 if (thumbOffsetX.value.absoluteValue <= startDragThreshold &&
                     thumbOffsetY.value.absoluteValue <= startDragThreshold
                 ) {
                     onClick()
                 }
-            }*/
+            }
             .background(Color.Red)
             .pointerInput(Unit) {
                 forEachGesture {
@@ -435,6 +435,8 @@ private fun DraggableThumbButton(
                             } else {
                                 onValueDecreaseClick()
                             }
+                        } else if (thumbOffsetY.value.absoluteValue >= (dragLimitVerticalPx * DRAG_LIMIT_VERTICAL_THRESHOLD_FACTOR)){
+                            onValueReset()
                         }
 
                         scope.launch {
