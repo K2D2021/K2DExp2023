@@ -190,7 +190,7 @@ private fun CounterButton(
 
         ButtonContainer(
             thumbOffsetX = thumbOffsetX.value,
-//            thumbOffsetY = thumbOffsetY.value,
+            thumbOffsetY = thumbOffsetY.value,
             onValueDecreaseClick = onValueDecreaseClick,
             onValueIncreaseClick = onValueIncreaseClick,
             onValueClearClick = onValueClearClick,
@@ -214,7 +214,7 @@ private fun CounterButton(
 @Composable
 private fun ButtonContainer(
     thumbOffsetX: Float,
-//    thumbOffsetY: Float,
+    thumbOffsetY: Float,
     onValueDecreaseClick: () -> Unit,
     onValueIncreaseClick: () -> Unit,
     onValueClearClick: () -> Unit,
@@ -223,7 +223,7 @@ private fun ButtonContainer(
 ) {
 
     val horizontalHighlightLimitPx = DRAG_HORIZONTAL_ICON_HIGHLIGHT_LIMIT_DP.dp.dpToPx()
-//    val verticalHighlightLimitPx = DRAG_VERTICAL_ICON_HIGHLIGHT_LIMIT_DP.dp.dpToPx()
+    val verticalHighlightLimitPx = DRAG_VERTICAL_ICON_HIGHLIGHT_LIMIT_DP.dp.dpToPx()
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -273,7 +273,12 @@ private fun ButtonContainer(
                 contentDescription = "Clear count",
                 onClick = onValueClearClick,
 //                enabled = false,
-                tintColor = Color.Black.copy(alpha = ICON_BUTTON_ALPHA_INITIAL)
+                tintColor = Color.Black.copy(
+                    alpha = (thumbOffsetY.absoluteValue / verticalHighlightLimitPx).coerceIn(
+                        ICON_BUTTON_ALPHA_INITIAL,
+                        1f
+                    )
+                )
             )
         }
         IconControlButton(
