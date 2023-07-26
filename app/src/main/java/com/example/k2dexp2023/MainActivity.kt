@@ -261,7 +261,6 @@ private fun ButtonContainer(
             )
             .padding(horizontal = 8.dp)
     ) {
-
         IconControlButton(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_more_24),
             contentDescription = "Decrease count",
@@ -281,7 +280,6 @@ private fun ButtonContainer(
             )
         )
 
-
         if (clearButtonVisible) {
             IconControlButton(
                 icon = ImageVector.vectorResource(id = R.drawable.baseline_clear_24),
@@ -296,7 +294,6 @@ private fun ButtonContainer(
                 )
             )
         }
-
 
         IconControlButton(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_less_24),
@@ -396,7 +393,6 @@ private fun DraggableThumbButton(
                     awaitPointerEventScope {
                         awaitFirstDown()
 
-
                         dragDirection.value = DragDirection.NONE
 
                         var counterJob: Job? = null
@@ -422,22 +418,18 @@ private fun DraggableThumbButton(
                                                     } else {
                                                         onValueDecreaseClick()
                                                     }
-
                                                     delay(COUNTER_DELAY_FAST_MS)
                                                     elapsed += COUNTER_DELAY_FAST_MS
                                                 }
                                             }
                                         }
 
-
                                         dragDirection.value = DragDirection.HORIZONTAL
-
 
                                         val dragFactor =
                                             1 - (thumbOffsetX.value / dragLimitHorizontalPx).absoluteValue
                                         val delta =
                                             pointerInputChange.positionChange().x * dragFactor
-
                                         val targetValue = thumbOffsetX.value + delta
                                         val targetValueWithinBounds =
                                             targetValue.coerceIn(
@@ -464,7 +456,6 @@ private fun DraggableThumbButton(
                                                 -dragLimitVerticalPx,
                                                 dragLimitVerticalPx
                                             )
-
                                         thumbOffsetY.snapTo(targetValueWithinBounds)
                                     }
                                 }
@@ -473,7 +464,6 @@ private fun DraggableThumbButton(
 
                         counterJob?.cancel()
                     }
-
 
                     if (thumbOffsetX.value.absoluteValue >= (dragLimitHorizontalPx * DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR)) {
                         if (thumbOffsetX.value.sign > 0) {
