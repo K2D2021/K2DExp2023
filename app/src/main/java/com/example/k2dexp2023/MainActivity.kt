@@ -52,6 +52,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.k2dexp2023.ui.theme.K2DExp2023Theme
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.sign
@@ -240,13 +243,13 @@ private fun ButtonContainer(
             .background(
                 Color.Red.copy(
                     alpha = if (thumbOffsetX.absoluteValue > 0.0f) {
-                        (CONTAINER_BACKGROUND_ALPHA_INITIAL +
-                                ((thumbOffsetX.absoluteValue / horizontalHighlightLimitPx) / 5f)).coerceAtMost(
+
+                        (CONTAINER_BACKGROUND_ALPHA_INITIAL + ((thumbOffsetX.absoluteValue / horizontalHighlightLimitPx) / 5f)).coerceAtMost(
                             CONTAINER_BACKGROUND_ALPHA_MAX
                         )
                     } else if (thumbOffsetY.absoluteValue > 0.0f) {
-                        (CONTAINER_BACKGROUND_ALPHA_INITIAL +
-                                ((thumbOffsetY.absoluteValue / verticalHighlightLimitPx) / 15f)).coerceAtMost(
+
+                        (CONTAINER_BACKGROUND_ALPHA_INITIAL + ((thumbOffsetY.absoluteValue / verticalHighlightLimitPx) / 15f)).coerceAtMost(
                             CONTAINER_BACKGROUND_ALPHA_MAX
                         )
                     } else {
@@ -256,6 +259,7 @@ private fun ButtonContainer(
             )
             .padding(horizontal = 8.dp)
     ) {
+
         IconControlButton(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_more_24),
             contentDescription = "Decrease count",
@@ -275,6 +279,7 @@ private fun ButtonContainer(
             )
         )
 
+
         if (clearButtonVisible) {
             IconControlButton(
                 icon = ImageVector.vectorResource(id = R.drawable.baseline_clear_24),
@@ -289,6 +294,8 @@ private fun ButtonContainer(
                 )
             )
         }
+
+
         IconControlButton(
             icon = ImageVector.vectorResource(id = R.drawable.baseline_expand_less_24),
             contentDescription = "Increase count",
@@ -374,6 +381,7 @@ private fun DraggableThumbButton(
             .size(64.dp)
             .clip(CircleShape)
             .clickable {
+
                 if (thumbOffsetX.value.absoluteValue <= startDragThreshold &&
                     thumbOffsetY.value.absoluteValue <= startDragThreshold
                 ) {
@@ -389,17 +397,36 @@ private fun DraggableThumbButton(
 
                         dragDirection.value = DragDirection.NONE
 
-//                        var counterJob: Job? = null
+                        var counterJob: Job? = null
 
                         do {
                             val event = awaitPointerEvent()
                             event.changes.forEach { pointerInputChange ->
 
                                 scope.launch {
-                                    if (dragDirection.value == DragDirection.NONE &&
-                                        pointerInputChange.positionChange().x.absoluteValue >= startDragThreshold ||
+                                    if ((dragDirection.value == DragDirection.NONE &&
+                                                pointerInputChange.positionChange().x.absoluteValue >= startDragThreshold) ||
                                         dragDirection.value == DragDirection.HORIZONTAL
                                     ) {
+
+                                        if (dragDirection.value == DragDirection.NONE) {
+                                            counterJob = scope.launch {
+                                                delay(COUNTER_DELAY_INITIAL_MS)
+
+                                                var elapsed = COUNTER_DELAY_INITIAL_MS
+                                                while (isActive && thumbOffsetX.value.absoluteValue >= (dragLimitHorizontalPx * DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR)) {
+                                                    if (thumbOffsetX.value.sign > 0) {
+                                                        onValueIncreaseClick()
+                                                    } else {
+                                                        onValueDecreaseClick()
+                                                    }
+
+                                                    delay(COUNTER_DELAY_FAST_MS)
+                                                    elapsed += COUNTER_DELAY_FAST_MS
+                                                }
+                                            }
+                                        }
+
 
                                         dragDirection.value = DragDirection.HORIZONTAL
 
@@ -442,35 +469,37 @@ private fun DraggableThumbButton(
                             }
                         } while (event.changes.any { it.pressed })
 
+                        counterJob?.cancel()
+                    }
 
-                        if (thumbOffsetX.value.absoluteValue >= dragLimitHorizontalPx * DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR) {
-                            if (thumbOffsetX.value.sign > 0) {
-                                onValueIncreaseClick()
-                            } else {
-                                onValueDecreaseClick()
-                            }
-                        } else if (thumbOffsetY.value.absoluteValue >= (dragLimitVerticalPx * DRAG_LIMIT_VERTICAL_THRESHOLD_FACTOR)) {
-                            onValueReset()
+
+                    if (thumbOffsetX.value.absoluteValue >= (dragLimitHorizontalPx * DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR)) {
+                        if (thumbOffsetX.value.sign > 0) {
+                            onValueIncreaseClick()
+                        } else {
+                            onValueDecreaseClick()
                         }
+                    } else if (thumbOffsetY.value.absoluteValue >= (dragLimitVerticalPx * DRAG_LIMIT_VERTICAL_THRESHOLD_FACTOR)) {
+                        onValueReset()
+                    }
 
-                        scope.launch {
-                            if (dragDirection.value == DragDirection.HORIZONTAL && thumbOffsetX.value != 0f) {
-                                thumbOffsetX.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = StiffnessLow
-                                    )
+                    scope.launch {
+                        if (dragDirection.value == DragDirection.HORIZONTAL && thumbOffsetX.value != 0f) {
+                            thumbOffsetX.animateTo(
+                                targetValue = 0f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = StiffnessLow
                                 )
-                            } else if (dragDirection.value == DragDirection.VERTICAL && thumbOffsetY.value != 0f) {
-                                thumbOffsetY.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = StiffnessLow
-                                    )
+                            )
+                        } else if (dragDirection.value == DragDirection.VERTICAL && thumbOffsetY.value != 0f) {
+                            thumbOffsetY.animateTo(
+                                targetValue = 0f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = StiffnessLow
                                 )
-                            }
+                            )
                         }
                     }
                 }
