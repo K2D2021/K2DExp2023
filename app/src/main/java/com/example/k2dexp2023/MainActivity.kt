@@ -13,6 +13,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -324,15 +326,15 @@ private fun IconControlButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     tintColor: Color = Color.White,
-//    clickTintColor: Color = Color.White,
+    clickTintColor: Color = Color.White,
     enabled: Boolean = true
 ) {
-//    val interactionSource = remember { MutableInteractionSource() }
-//    val isPressed by interactionSource.collectIsPressedAsState()
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
 
     IconButton(
         onClick = onClick,
-//        interactionSource = interactionSource,
+        interactionSource = interactionSource,
         enabled = enabled,
         modifier = modifier
             .size(48.dp)
@@ -340,7 +342,7 @@ private fun IconControlButton(
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = tintColor,
+            tint = if (isPressed) clickTintColor else tintColor,
             modifier = Modifier.size(32.dp)
         )
     }
